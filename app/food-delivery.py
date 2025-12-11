@@ -47,10 +47,6 @@ st.set_page_config(
 )
 
 st.title("📦 Prediksi Waktu Pengantaran Makanan (ETA)")
-st.caption(
-    "Take-home test — Food-delivery ETA prediction with sklearn pipelines, tuning, "
-    "Altair interactive visualizations, and feature engineering."
-)
 
 with st.expander("🎯 Tujuan", expanded=True):
     st.markdown(
