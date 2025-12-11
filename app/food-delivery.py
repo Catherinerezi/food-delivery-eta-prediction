@@ -41,8 +41,6 @@ try:
 except Exception:
     has_xgb = False
 
-# --------------------------- Streamlit CONFIG ---------------------------
-
 st.set_page_config(
     page_title="Prediksi Waktu Pengantaran Makanan",
     layout="wide",
@@ -53,10 +51,6 @@ st.caption(
     "Take-home test — Food-delivery ETA prediction with sklearn pipelines, tuning, "
     "Altair interactive visualizations, and feature engineering."
 )
-
-# -----------------------------------------------------------------------
-# Prediksi Waktu Pengantaran Makanan / Tujuan
-# -----------------------------------------------------------------------
 
 with st.expander("🎯 Tujuan", expanded=True):
     st.markdown(
@@ -71,8 +65,7 @@ pada layanan pengantaran makanan, sehingga tim operasional dapat:
 """
     )
 
-# ============================ Data Loading ==============================
-
+# Data Loading 
 @st.cache_data(show_spinner=True)
 def load_data():
     file_id = "1qI18G7Rjr5Axqz-HawadpTzSnTwf5jeQ"
@@ -84,10 +77,7 @@ def load_data():
 df_raw = load_data()
 df = df_raw.copy()
 
-# -----------------------------------------------------------------------
 # Data Undertanding
-# -----------------------------------------------------------------------
-
 st.header("Data Undertanding")
 
 c1, c2, c3 = st.columns([2, 2, 3])
@@ -105,18 +95,13 @@ with c3:
     st.subheader("Dtypes")
     st.json({col: str(tp) for col, tp in df.dtypes.items()})
 
-# -----------------------------------------------------------------------
-# Cek Duplikat
-# -----------------------------------------------------------------------
 
+# Cek Duplikat
 st.subheader("Cek Duplikat")
 dup_count = int(df.duplicated().sum())
 st.write(f"Jumlah duplikat: **{dup_count}**")
 
-# -----------------------------------------------------------------------
 # Cek Missing Value
-# -----------------------------------------------------------------------
-
 st.subheader("Cek Missing Value")
 
 missing_pct = (df.isna().mean() * 100).sort_values(ascending=False).round(2)
@@ -142,10 +127,7 @@ with c_m2:
     )
     st.altair_chart(chart_missing, use_container_width=True)
 
-# -----------------------------------------------------------------------
-# Data Cleaning (kategori & numerik) + Cek ulang Missing / Duplicates
-# -----------------------------------------------------------------------
-
+# Data Cleaning (tambahan)
 st.subheader("Cleaning singkat (kategori & numerik)")
 
 cat_cols = df.select_dtypes(include=["object", "string"]).columns.tolist()
@@ -186,10 +168,7 @@ with c_m3:
 with c_m4:
     st.write(f"Duplikat setelah cleaning: **{dup_count_after}**")
 
-# -----------------------------------------------------------------------
 # Pembagian Data Set
-# -----------------------------------------------------------------------
-
 st.header("Pembagian Data Set")
 
 TARGET = "Delivery_Time_min"
@@ -208,15 +187,12 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 st.success(f"X_train: {X_train.shape} | X_test: {X_test.shape}")
 
-# -----------------------------------------------------------------------
-# EDA ringan + importance eksploratif
-# -----------------------------------------------------------------------
 
-st.header("EDA ringan + importance eksploratif")
+# EDA ringan + feature importance eksploratif
+st.header("EDA ringan + feature importance eksploratif")
 
-# ------------------ EDA ringan di TRAIN ------------------
-
-st.subheader("EDA ringan di TRAIN")
+# EDA ringan di train
+st.subheader("EDA ringan di train")
 
 num_cols = X_train.select_dtypes(include=[np.number]).columns.tolist()
 cat_cols = X_train.select_dtypes(include=["object", "string"]).columns.tolist()
@@ -237,7 +213,7 @@ with c_eda2:
         use_container_width=True,
     )
 
-# Distribusi target (Altair)
+# Distribusi target
 st.subheader("Distribusi Target: Delivery_Time_min")
 hist_target = (
     alt.Chart(df)
@@ -252,7 +228,7 @@ hist_target = (
 )
 st.altair_chart(hist_target, use_container_width=True)
 
-# Korelasi numerik vs target (Altair heatmap sederhana)
+# Korelasi numerik vs target
 if len(num_cols) > 1:
     corr = df[num_cols + [TARGET]].corr()[TARGET].drop(TARGET).sort_values(
         ascending=False
@@ -274,7 +250,7 @@ if len(num_cols) > 1:
     )
     st.altair_chart(corr_chart, use_container_width=True)
 
-# Analisis kategori vs target (pilih 1 kategori agar UI rapi)
+# Analisis kategori vs target
 st.subheader("Delivery_Time_min vs Kategori (Boxplot)")
 
 cat_cols_for_box = [
@@ -298,10 +274,7 @@ if cat_cols_for_box:
 else:
     st.info("Tidak ada kolom kategori dengan cardinality ≤ 10.")
 
-# -----------------------------------------------------------------------
 # Feature Imprtance Eksploratif (Permutation importance via CV)
-# -----------------------------------------------------------------------
-
 st.subheader("Feature Imprtance Eksploratif (ΔMAE via Permutation)")
 
 # Preprocess untuk importance
@@ -376,10 +349,8 @@ chart_imp = (
 )
 st.altair_chart(chart_imp, use_container_width=True)
 
-# -----------------------------------------------------------------------
-# Tuning via CV (MAE) + Preprocessing
-# -----------------------------------------------------------------------
 
+# Tuning via CV (MAE) + Preprocessing
 st.header("Tuning via CV")
 
 def rmse_metric(y_true, y_pred):
@@ -546,10 +517,8 @@ best_name = cmp.loc[0, "model"]
 best_pipe = best_models[best_name]
 st.success(f"Best by CV (MAE): **{best_name}**")
 
-# -----------------------------------------------------------------------
-# Pemilihan Model & Evaluasi baseline (tanpa tuning lanjutan)
-# -----------------------------------------------------------------------
 
+# Pemilihan Model & Evaluasi baseline
 st.header("Pemilihan Model & Evaluasi (Ridge / Lasso / Tree / RF / XGB)")
 
 def init_supported(estimator_cls, **kwargs):
@@ -654,10 +623,7 @@ df_res[["mae", "rmse", "r2"]] = df_res[["mae", "rmse", "r2"]].round(3)
 st.subheader("Tabel Ringkasan (Evaluasi)")
 st.dataframe(df_res, use_container_width=True)
 
-# -----------------------------------------------------------------------
 # Visualisasi RMSE / MAE / R² (Altair)
-# -----------------------------------------------------------------------
-
 st.subheader("Visualisasi RMSE / MAE / R²")
 
 # Baseline (mean)
@@ -739,13 +705,10 @@ with c_v2:
 with c_v3:
     st.altair_chart(chart_r2, use_container_width=True)
 
-# -----------------------------------------------------------------------
-# Feature Importance untuk model TERBAIK
-# -----------------------------------------------------------------------
+# Feature Importance untuk model terbaik
+st.header("Feature Importance untuk model terbaik")
 
-st.header("Feature Importance untuk model TERBAIK")
-
-# mapping nama -> pipeline
+# mapping nama
 model_map = {
     "Ridge": ridge_pipe,
     "Lasso": lasso_pipe,
@@ -849,10 +812,7 @@ chart_perm = (
 )
 st.altair_chart(chart_perm, use_container_width=True)
 
-# -----------------------------------------------------------------------
-# Visualisasi — Parity + Residuals + Error per segmen (Altair)
-# -----------------------------------------------------------------------
-
+# Visualisasi — Parity + Residuals + Error per segmen
 st.header("Visualisasi")
 
 st.subheader("Parity + Residuals")
@@ -957,10 +917,7 @@ if seg_cols:
 else:
     st.info("Tidak ada kolom kategori untuk error per segmen.")
 
-# -----------------------------------------------------------------------
-# PDP (Partial Dependence) untuk fitur numerik utama (Altair-only)
-# -----------------------------------------------------------------------
-
+# PDP (Partial Dependence) untuk fitur numerik utama
 st.header("PDP (Partial Dependence) untuk fitur numerik utama")
 
 def compute_pdp_1d(model, X_ref: pd.DataFrame, feat: str, grid_size: int = 25):
@@ -1001,10 +958,7 @@ if pdp_candidates:
 else:
     st.info("Tidak ada fitur numerik untuk PDP.")
 
-# -----------------------------------------------------------------------
 # Feature engineering (Time_of_Day, interaksi, dsb.)
-# -----------------------------------------------------------------------
-
 st.header("Feature engineering")
 
 def add_time_features(df_in: pd.DataFrame) -> pd.DataFrame:
@@ -1104,10 +1058,7 @@ try:
 except Exception as e:
     st.warning(f"Refit dengan FE gagal, pakai fitur lama saja. Error: {e}")
 
-# -----------------------------------------------------------------------
-# Final evaluation (setelah tuning) + Donut (% within tolerance)
-# -----------------------------------------------------------------------
-
+# Final evaluation
 st.header("Final evaluation (setelah tuning)")
 
 final_model = best_pipe
@@ -1130,10 +1081,10 @@ metrics_final = {
 df_final_eval = pd.DataFrame(metrics_final).round(3)
 st.dataframe(df_final_eval, use_container_width=True)
 
-st.subheader("Finalisasi — % within ± tolerance (donut)")
+st.subheader("Finalisasi — % within tolerance (donut)")
 
 TOL_MIN = st.slider(
-    "Toleransi ± menit (untuk % within)", min_value=1, max_value=15, value=5, step=1
+    "Toleransi menit (untuk % within)", min_value=1, max_value=15, value=5, step=1
 )
 
 pct_within = (np.abs(y_test - y_te_pred) <= TOL_MIN).mean() * 100.0
@@ -1162,10 +1113,7 @@ donut_chart = (
 st.altair_chart(donut_chart, use_container_width=False)
 st.write(f"**% within ±{TOL_MIN} menit:** {pct_within:.1f}%")
 
-# -----------------------------------------------------------------------
 # Folder Artifacts (opsional di Streamlit)
-# -----------------------------------------------------------------------
-
 st.header("Folder Artifacts (opsional)")
 
 ART = None
