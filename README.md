@@ -41,12 +41,12 @@ Before any machine learning, we enrich, clean, and make sense of the columns so 
 **General quality checks & preprocessing rules**
 Before any model tries to learn from the data, the app performs a series of sensible, leak-proof steps:
 - Type fixing and cleaning
-  - Strip extra spaces from text (" High " → "High").
+  - Strip extra spaces from text (" High " -> "High").
   - Convert text-like columns to string / category.
-  - Convert numeric-like columns to proper numbers and handle bad values ("N/A", "unknown" → NaN → imputed).
+  - Convert numeric-like columns to proper numbers and handle bad values ("N/A", "unknown" -> NaN → imputed).
 - Missing-value treatment
-  - Numeric features → median imputation (robust to outliers).
-  - Categorical features → most frequent category.
+  - Numeric features -> median imputation (robust to outliers).
+  - Categorical features -> most frequent category.
 - ID and text columns
   - Kept for debugging only (like order_id).
   - Removed from the feature matrix to avoid the model learning meaningless codes.
