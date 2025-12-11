@@ -39,7 +39,6 @@ Before any machine learning, we enrich, clean, and make sense of the columns so 
 | `Weather_Time`           | `category`  | Combined label: `Weather` + `Time_of_Day`                | Captures joint effects like “Rainy_Evening” vs “Clear_Morning”                                  |
 
 **General quality checks & preprocessing rules**
-
 Before any model tries to learn from the data, the app performs a series of sensible, leak-proof steps:
 - Type fixing and cleaning
   - Strip extra spaces from text (" High " → "High").
@@ -57,4 +56,9 @@ Before any model tries to learn from the data, the app performs a series of sens
 - Model-ready encoding
   - Numeric features: imputed, and sometimes scaled (for linear models like Ridge/Lasso).
   - Categorical features: one-hot encoded with handle_unknown="ignore" so new levels at prediction time do not break the app.
-This ensures that anything you see in the app—charts, metrics, feature importance—is based on clean, consistent data, and can be reproduced.
+This ensures that anything you see in the app—charts, metrics, feature importance is based on clean, consistent data, and can be reproduced.
+
+# Attachment
+- [Data Processing](https://colab.research.google.com/drive/1vzjrYL14UJxsd2FptWBJTCzvRgBI1B0A)
+
+# What We Bring To The Table?
