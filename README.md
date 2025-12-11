@@ -37,4 +37,22 @@ Before any machine learning, we enrich, clean, and make sense of the columns so 
 | `Speed_km_per_min`       | `float`     | Derived: `Distance_km / Delivery_Time_min`               | Post-hoc feature to understand realistic speeds; care taken with division by zero               |
 | `Prep_per_km`            | `float`     | Derived: `Preparation_Time_min / Distance_km`            | Helps compare prep effort relative to distance                                                  |
 | `Weather_Time`           | `category`  | Combined label: `Weather` + `Time_of_Day`                | Captures joint effects like “Rainy_Evening” vs “Clear_Morning”                                  |
-
+**General quality checks & preprocessing rules**
+Before any model tries to learn from the data, the app performs a series of sensible, leak-proof steps:
+- Type fixing and cleaning
+  - Strip extra spaces from text (" High " → "High").
+  - Convert text-like columns to string / category.
+  - Convert numeric-like columns to proper numbers and handle bad values ("N/A", "unknown" → NaN → imputed).
+- Missing-value treatment
+  - Numeric features → median imputation (robust to outliers).
+  - Categorical features → most frequent category.
+- ID and text columns
+  - Kept for debugging only (like order_id).
+  - Removed from the feature matrix to avoid the model learning meaningless codes.
+- Train–test split
+  - Split once (train_test_split, 80/20).
+  - All preprocessing pipelines (SimpleImputer, OneHotEncoder, StandardScaler) are fitted only on the training set, then applied to test.
+- Model-ready encoding
+  - Numeric features: imputed, and sometimes scaled (for linear models like Ridge/Lasso).
+  - Categorical features: one-hot encoded with handle_unknown="ignore" so new levels at prediction time do not break the app.
+This ensures that anything you see in the app—charts, metrics, feature importance—is based on clean, consistent data, and can be reproduced.
