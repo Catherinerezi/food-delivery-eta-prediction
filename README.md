@@ -227,3 +227,22 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 <p align="center">
   <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/Final%20Diagram.png" alt="Final Diagram" width="1000">
 </p>
+
+## How does this connect back to the earlier sections?
+- Section 2 (How big is the problem?) showed that delivery times are spread and skewed, so predicting ETA is non-trivial.
+- Section 3 (How the model behaves) showed that the model uses sensible drivers (distance, prep time, traffic, time-of-day, experience) and where it still struggles.
+- Hence, The Final Result compresses everything into a single operational metric: _minutes within tolerance on the held-out test set_, in order to make product and operations teams can decide whether the current ETA quality is acceptable, or whether they need another modelling iteration or more data.
+
+# What this ETA model really tells us?
+## What we now know?
+- **The model is good, but not perfect.** <br>
+  On the test set, the best tuned model clearly beats the simple baseline (always predicting the mean). Train and test scores are close, so the model generalises. With an about 5 minute tolerance, about 57% of orders are predicted “close enough”. This is useful, but still leaves room to improve.
+
+- **The delivery-time problem is naturally noisy.** <br>
+  The histogram of 'Delivery_Time_min' shows a wide spread. Most orders arrive in a normal range, but some are much faster or much slower. However, all missing values and duplicates are already handled, this noise comes from the real world (kitchen load, traffic, weather), not from dirty data.
+
+- **A small set of factors explains most of ETA.** <br>
+  Feature importance and PDP results repeat the same pattern: distance, preparation time, weather, traffic level, time of day, and courier experience are the main drivers. The model learns what we expect: longer distance and longer prep time increase ETA, experience helps, bad weather and heavy traffic hurt.
+
+- **We know where the ETA is strong and where we must be careful.** <br>
+  Around the “normal” range, parity and residual plots look healthy: predictions and actuals are aligned on average. Besides, segment-error views show clearly higher errors under bad weather, heavy traffic, and some time windows. In those slices, raw ETA should not be shown without some extra buffer.
