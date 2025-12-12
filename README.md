@@ -77,12 +77,6 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 - On top of that, it computes for each test order whether |y_test − y_te_pred| falls within a user-selected tolerance window, producing a minutes-within-tolerance metric on unseen data.
 
 **What do we actually get out of it?**
-- A final evaluation table clearly reports Train vs Test MAE, RMSE, and R² after tuning and feature engineering, making it easy to see whether the model generalises beyond the training set.
-
-<p align="center">
-  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/Tabel%20perbandingan%20model.png" alt="Tabel Perbandingan" width="1000">
-</p>
-
 - From the same predictions, the minutes-within-tolerance metric is derived, providing a direct measure of how often ETA errors stay inside the chosen window on the test set.
 - Together, these outputs show that the model is not only numerically strong, but also structured to support a reliability view that can be used later as the basis for ETA evaluation.
 
@@ -213,8 +207,23 @@ This ensures that anything you see in the app—charts, metrics, feature importa
   <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/PDp.png" alt="PDP" width="1000">
 </p>
 
-- The comparison of MAE before and after feature engineering shows whether additional domain logic genuinely improves performance, grounding the modelling decisions in measurable gains.
+# How reliable is our ETA on unseen orders?
+## What does the final test say?
+- We freeze the **best cross-validated pipeline with feature engineering** and evaluate it on the held-out 20% test set only.
+- The final evaluation table (Train vs Test MAE, RMSE, R²) shows that the tuned model clearly outperforms the naive mean baseline and keeps performance reasonably close between train and test.
+- This stability means we can safely use the test predictions as the basis for an operational metric: _“minutes within tolerance”_.
 
 <p align="center">
-  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/Final%20MAE.png" alt="Final MAE" width="1000">
+  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/Tabel%20perbandingan%20model.png" alt="Final MAE" width="1000">
+</p>
+
+## How often is the ETA “close enough”?
+- For each order in the test set, the app compares the predicted ETA 'y_te_pred' with the true 'Delivery_Time_min' and flags it as _Within_ if the absolute error is at most 'T minutes'.
+- A slider in the Streamlit app lets the user choose 'T ∈ [1, 15]', the donut chart instantly recomputes the share of orders _Within_ vs _Outside_ that window.
+- At the default setting (T = 5 minutes), around 57% of test orders are delivered within ±5 minutes of the predicted ETA, and about 43% fall outside that band.
+- This turns all previous modelling work into one simple, actionable statement for operations:
+  _“With the current model, roughly six out of ten ETAs are accurate to within five minutes on unseen data.”_
+
+<p align="center">
+  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/Final%20Diagram.png" alt="Final Diagram" width="1000">
 </p>
