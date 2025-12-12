@@ -85,3 +85,8 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 
 - From the same predictions, the minutes-within-tolerance metric is derived, providing a direct measure of how often ETA errors stay inside the chosen window on the test set.
 - Together, these outputs show that the model is not only numerically strong, but also structured to support a reliability view that can be used later as the basis for ETA evaluation.
+
+<p align="center">
+  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/aseets/Visualisasi%20pemodelan%20terbaik.png" alt="Visualisasi Perbandingan" width="1000">
+</p>
+
