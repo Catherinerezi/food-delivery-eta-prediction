@@ -210,7 +210,11 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 - PDP curves expose how predicted delivery time responds when individual features change, helping validate whether the model’s behaviour follows realistic patterns.
 
 <p align="center">
-  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/PDp.png" alt="Error per Segment" width="1000">
+  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/PDp.png" alt="PDP" width="1000">
 </p>
 
 - The comparison of MAE before and after feature engineering shows whether additional domain logic genuinely improves performance, grounding the modelling decisions in measurable gains.
+
+<p align="center">
+  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/Final%20MAE.png" alt="Final MAE" width="1000">
+</p>
