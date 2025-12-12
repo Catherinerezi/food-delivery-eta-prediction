@@ -125,12 +125,12 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 
 <p align="center">
   <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/aseets/Before%20Cleaning%20Data.png" alt="Before Data Cleaning" width="500">
-  Before Data Cleaning
+  <em>Before Data Cleaning<em>
 </p>
 
 <p align="center">
   <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/aseets/After%20Data%20Cleaning.png" alt="Before Data Cleaning" width="500">
-  After Data Cleaning
+  <em>After Data Cleaning<em>
 </p>
 
 - A histogram of Delivery_Time_min reveals:
