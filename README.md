@@ -79,7 +79,7 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 **What do we actually get out of it?**
 - A final evaluation table clearly reports Train vs Test MAE, RMSE, and R² after tuning and feature engineering, making it easy to see whether the model generalises beyond the training set.
 <p align="center">
-  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/aseets/Tabel%20perbandingan%20model.png" alt="Tabel Perbandingan" width="400">
+  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/aseets/Tabel%20perbandingan%20model.png" alt="Tabel Perbandingan" width="1000">
 </p>
 - From the same predictions, the minutes-within-tolerance metric is derived, providing a direct measure of how often ETA errors stay inside the chosen window on the test set.
 - Together, these outputs show that the model is not only numerically strong, but also structured to support a reliability view that can be used later as the basis for ETA evaluation.
