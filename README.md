@@ -66,8 +66,8 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 ## Why the Model Is Useful (via “minutes within tolerance”)?
 
 **What are we trying to answer here?**
-- The app does not stop at MAE/RMSE; it explicitly measures how many orders have prediction errors within a chosen number of minutes.
-- This “minutes within tolerance” view answers a practical question: “In reality, how often does our ETA land close enough to be acceptable?”
+- The app does not stop at MAE/RMSE, it explicitly measures how many orders have prediction errors within a chosen number of minutes.
+- This _“minutes within tolerance”_ view answers a practical question: _“In reality, how often does our ETA land close enough to be acceptable?”_
 - It turns the model from a purely statistical object into an operational signal of reliability.
 
 **How do we do this in code?**
@@ -90,3 +90,51 @@ This ensures that anything you see in the app—charts, metrics, feature importa
   <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/aseets/Visualisasi%20pemodelan%20terbaik.png" alt="Visualisasi Perbandingan" width="1000">
 </p>
 
+## How Big the Problem Is (the shape of delivery times & data quality)?
+
+**What are we trying to understand about the data?**
+- Before any modelling, the app answers: _“What does our data look like?”_ and _“How variable is Delivery_Time_min on its own?”_.
+- It inspects **data quality, target distribution, and basic relationships with the target**, to understand how challenging ETA prediction will be.
+
+**How do we explore this in practice?**
+- The dataset is loaded from Google Drive via load_data(), copied into df, and profiled using:
+  - **Shape & Head** (df.shape, df.head()) to show scale and schema.
+  - **Describe** (df.describe().T) to capture basic statistics for numeric fields.
+  - **Dtypes** (JSON mapping) to make each column’s type explicit.
+- Data quality is assessed by:
+  - Counting duplicates with df.duplicated().sum().
+  - Computing missing percentages per column and visualising them with an Altair bar chart.
+- A short cleaning pass:
+  - Normalises categorical strings (strip + collapse whitespace).
+  - Fills missing categoricals with their mode.
+  - Coerces Courier_Experience_yrs to numeric and imputes its median, or stops with a clear error if the column is absent.
+  - Recomputes missing and duplicate statistics after cleaning to show improvement.
+- The dataset is split into train and test (train_test_split, 80/20), dropping ID-like columns and using Delivery_Time_min as the target.
+- Light EDA then runs on the training data:
+  - Missing percentage by feature (miss_train).
+  - Target summary statistics from y_train.
+  - A histogram of Delivery_Time_min on the cleaned data.
+  - Correlations between numerical features and the target.
+  - A boxplot of the target versus a selected low-cardinality categorical feature.
+
+**What picture of the problem do we see?**
+- A Data Understanding section that displays:
+  - Dataset shape and the first rows, giving a concrete feel of what each record looks like.
+  - Numeric summaries and data types, clarifying how each field is stored and used.
+  - Duplicate and missing-value counts both before and after cleaning, showing how much preparation is needed.
+
+<p align="center">
+  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/aseets/Before%20Cleaning%20Data.png" alt="Before Data Cleaning" width="1000">
+  Before Data Cleaning
+</p>
+
+<p align="center">
+  <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/aseets/After%20Data%20Cleaning.png" alt="Before Data Cleaning" width="1000">
+  After Data Cleaning
+</p>
+
+- A histogram of Delivery_Time_min reveals:
+  - Where most deliveries cluster in time.
+  - How frequent very short or very long deliveries are.
+  - Whether the target distribution is roughly tight or strongly skewed.
+- Correlation and boxplot views highlight _"Which features seem most related to delivery time?"_ and _"How different categories shift the target, framing, and how difficult the prediction task is even before any model is trained?"_.
