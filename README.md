@@ -149,3 +149,37 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 <p align="center">
   <img src="https://github.com/Catherinerezi/Food-Delivery-ETA-Prediction/blob/main/assets/Correlation%20within%20target.png" alt="Correlation Within Target" width="1000">
 </p>
+
+## How the Model Behaves (segments, feature importance, diagnostics & PDP)?
+
+**What do we want to know about the model’s behaviour?**
+- After the model is built, the app digs into: _“What is the model actually learning, where does it perform well or poorly, and do its patterns make operational sense?”_.
+- It combines exploratory feature importance, model comparison, final feature importance, diagnostics, segment-level error, and PDP to describe the model’s behaviour from multiple angles.
+
+**How do we analyse that behaviour step by step?**
+- Exploratory importance (on training data):
+  - Builds a ColumnTransformer with median-imputed numerics and one-hot-encoded categoricals.
+  - Trains a RandomForestRegressor in a pipeline.
+  - Uses manual permutation across 5-fold CV: shuffles each feature in turn, computes the ΔMAE vs baseline per fold, and averages results into imp_mae_tbl to find features that most damage performance when disrupted.
+- Model tuning & comparison:
+  - Defines separate preprocessing pipelines for linear (preprocess_linear) and tree-based (preprocess_tree) models.
+  - For each candidate model class (Ridge, Lasso, Decision Tree, Random Forest, XGBoost when available), it:
+    - Fits a baseline pipeline and evaluates MAE, RMSE, and R² on the test set.
+    - Runs GridSearchCV with MAE-based scoring to find optimised hyperparameters.
+    - Stores before/after metrics and the best parameters in cmp and selects best_pipe.
+  - Compares each model and a naive mean baseline with bar charts for RMSE, MAE, and R².
+- Final feature importance for the chosen model:
+  - Extracts feature names from the final ColumnTransformer.
+  - For models exposing feature_importances_, it builds a ranked importance table; for linear models with coef_, it uses absolute coefficients.
+  - Applies permutation_importance on the final pipeline over the test set, using a MAE-based scoring function to compute ΔMAE importances per feature (perm_mae).
+- Diagnostics & segmentation
+  - Produces predictions on the test set, computes residuals, and builds 'diag' with 'actual', 'pred', and 'resid'.
+  - Constructs:
+    - A parity plot (actual vs predicted).
+    - A residual histogram.
+    - A residual vs predicted scatter with a zero-residual reference line.
+  - Builds df_te with 'y_true', 'y_pred', and absolute error, then groups by available segment columns ('Weather', 'Traffic_Level', 'Time_of_Day', 'Vehicle_Type') to calculate segment MAE statistics and visualise mean error per segment.
+- PDP & feedback from feature engineering:
+  - Implements compute_pdp_1d to vary one numeric feature between its 5th and 95th percentile, recomputing average predictions to obtain a one-dimensional PDP.
+  - Displays PDP lines for chosen features such as 'Distance_km', 'Preparation_Time_min', or 'Courier_Experience_yrs'.
+  - Applies time-based features, interaction terms, and engineered ratios, refits 'best_pipe' on the enriched data, and reports whether MAE improves, using a success or warning message in the app.
