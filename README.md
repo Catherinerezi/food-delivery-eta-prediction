@@ -65,18 +65,18 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 
 ## Why the Model Is Useful (via “minutes within tolerance”)?
 
-**What are we trying to answer here?**
+### What are we trying to answer here?
 - The app does not stop at MAE/RMSE, it explicitly measures how many orders have prediction errors within a chosen number of minutes.
 - This _“minutes within tolerance”_ view answers a practical question: _“In reality, how often does our ETA land close enough to be acceptable?”_
 - It turns the model from a purely statistical object into an operational signal of reliability.
 
-**How do we do this in code?**
+### How do we do this in code?
 - Several model families (Ridge, Lasso, Decision Tree, Random Forest, and XGBoost when available) are trained and tuned using GridSearchCV with MAE as the main scoring metric, all under consistent preprocessing pipelines (preprocess_linear and preprocess_tree).
 - The pipeline with the best cross validated MAE is chosen as best_pipe and then refitted with engineered features on X_train_fe, y_train (time-of-day encodings, trigonometric time features, traffic × distance and weather × prep interactions, speed, and prep-per-km).
 - Using this final model (final_model), the app generates predictions for both train and test (y_tr_pred, y_te_pred) and summarises MAE, RMSE, and R² for each split in df_final_eval.
 - On top of that, it computes for each test order whether |y_test − y_te_pred| falls within a user-selected tolerance window, producing a minutes-within-tolerance metric on unseen data.
 
-**What do we actually get out of it?**
+### What do we actually get out of it?
 - From the same predictions, the minutes-within-tolerance metric is derived, providing a direct measure of how often ETA errors stay inside the chosen window on the test set.
 - Together, these outputs show that the model is not only numerically strong, but also structured to support a reliability view that can be used later as the basis for ETA evaluation.
 
@@ -86,11 +86,11 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 
 ## How Big the Problem Is (the shape of delivery times & data quality)?
 
-**What are we trying to understand about the data?**
+### What are we trying to understand about the data?
 - Before any modelling, the app answers: _“What does our data look like?”_ and _“How variable is Delivery_Time_min on its own?”_.
 - It inspects **data quality, target distribution, and basic relationships with the target**, to understand how challenging ETA prediction will be.
 
-**How do we explore this in practice?**
+### How do we explore this in practice?
 - The dataset is loaded from Google Drive via load_data(), copied into df, and profiled using:
   - **Shape & Head** (df.shape, df.head()) to show scale and schema.
   - **Describe** (df.describe().T) to capture basic statistics for numeric fields.
@@ -111,7 +111,7 @@ This ensures that anything you see in the app—charts, metrics, feature importa
   - Correlations between numerical features and the target.
   - A boxplot of the target versus a selected low-cardinality categorical feature.
 
-**What picture of the problem do we see?**
+### What picture of the problem do we see?
 - A Data Understanding section that displays:
   - Dataset shape and the first rows, giving a concrete feel of what each record looks like.
   - Numeric summaries and data types, clarifying how each field is stored and used.
@@ -146,11 +146,11 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 
 ## How the Model Behaves (segments, feature importance, diagnostics & PDP)?
 
-**What do we want to know about the model’s behaviour?**
+### What do we want to know about the model’s behaviour?
 - After the model is built, the app digs into: _“What is the model actually learning, where does it perform well or poorly, and do its patterns make operational sense?”_.
 - It combines exploratory feature importance, model comparison, final feature importance, diagnostics, segment-level error, and PDP to describe the model’s behaviour from multiple angles.
 
-**How do we analyse that behaviour step by step?**
+### How do we analyse that behaviour step by step?
 - Exploratory importance (on training data):
   - Builds a ColumnTransformer with median-imputed numerics and one-hot-encoded categoricals.
   - Trains a RandomForestRegressor in a pipeline.
@@ -178,7 +178,7 @@ This ensures that anything you see in the app—charts, metrics, feature importa
   - Displays PDP lines for chosen features such as 'Distance_km', 'Preparation_Time_min', or 'Courier_Experience_yrs'.
   - Applies time-based features, interaction terms, and engineered ratios, refits 'best_pipe' on the enriched data, and reports whether MAE improves, using a success or warning message in the app.
 
-**What does this reveal about the model in practice?**
+### What does this reveal about the model in practice?
 - Users can see _"Which features the model relies on most?"_ both from exploratory and final feature-importance views, building confidence that drivers like distance, preparation time, traffic, and time-of-day are being used in a meaningful way.
 
 <p align="center">
@@ -246,3 +246,34 @@ This ensures that anything you see in the app—charts, metrics, feature importa
 
 - **We know where the ETA is strong and where we must be careful.** <br>
   Around the “normal” range, parity and residual plots look healthy: predictions and actuals are aligned on average. Besides, segment-error views show clearly higher errors under bad weather, heavy traffic, and some time windows. In those slices, raw ETA should not be shown without some extra buffer.
+
+# What to do next?
+### Use “% within ±T minutes” as the main ETA KPI.
+- Treat the donut metric as the primary health check of the ETA system.
+- Track it overall and by segment (weather, traffic level, time of day, vehicle type).
+- Set a target, for example: at least 70% within 5 minutes, or 85% within 7 minutes, and monitor it over time.
+
+### Show ETA as a range, and widen it in risky situations.
+- For normal conditions (clear weather, low/medium traffic), show a narrow range such as 25–30 minutes, based on the model prediction plus a small buffer.
+- For risky segments (rainy/snowy/foggy, very high traffic, peak hours), automatically add a larger buffer, and show a wider range, for example: 35–45 minutes.
+- This keeps promises realistic: _the customer sees uncertainty when the system itself is less certain_.
+
+### Turn high-error segments into concrete operational actions.
+- Use the segment MAE table to find “worst” slices (e.g. foggy + high traffic).
+- For those slices, test actions such as: assigning closer couriers, reducing batching, limiting far-away restaurants, or warning customers about possible delays.
+- Review these segments regularly with operations and partner teams, because they are the main source of bad ETA experiences.
+
+### Use feature importance and PDP to guide product and partner decisions.
+- Since 'prep time' and 'distance' are key, consider restaurant SLAs or incentives that keep prep time under control, especially during peak hours.
+- Because 'courier experience' and 'vehicle type' matter, you can favour more experienced couriers or faster vehicles (e.g. motorbikes) for long-distance or high-risk routes.
+- PDP curves can support “what if” questions: _“If we reduce average prep time by 3 minutes, how much does ETA improve?”_
+
+### Build a simple monitoring and retraining loop.
+- In production, log every order’s predicted ETA and actual delivery time.
+- Recompute '% within ±T minutes' weekly or monthly and watch for drops.
+- If the metric falls (for example from 57% to 45% at about 5 minutes), schedule a retrain or revisit features and segments where errors grew.
+
+### Plan the next model upgrades based on missing signals, not just more complexity.
+- The current model already uses distance, weather, traffic level, time of day, prep time, and courier experience.
+- Bigger gains will probably come from better inputs (live traffic data, real-time kitchen queue length, surge or promotion indicators) or better calibration, not just a more complex algorithm.
+- Use the high-error segments as a guide for which extra data sources to add first.
